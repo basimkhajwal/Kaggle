@@ -15,10 +15,10 @@ object Titanic {
 
   val testData: String = "data/titanic/test.csv"
   val trainData: String = "data/titanic/train.csv"
-  val outputFile: String = "data/titanic/predictionReg.csv"
+  val outputFile: String = "data/titanic/predictionRegChanged.csv"
 
   case class PassengerData(id: Int, pClass: Int, isMale: Boolean, age: Double, sibSp: Int, parch: Int, fare: Double) extends DataObject {
-    override def getData: Array[Double] = Array(pClass, if (isMale) 0 else 1, age, sibSp, parch, fare)
+    override def getData: Array[Double] = Array(pClass, if (isMale) 1 else 0, sibSp, parch)
   }
 
   def readColumns(isTest: Boolean, cols: Array[String]): PassengerData = {
