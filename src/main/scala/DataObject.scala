@@ -1,5 +1,5 @@
 
-import breeze.linalg.{DenseMatrix, Matrix}
+import breeze.linalg.{DenseMatrix}
 
 /**
   * Created by Basim on 05/11/2016.
@@ -10,7 +10,7 @@ trait DataObject {
 }
 
 object DataObject {
-  def getMatrix[U <: DataObject](data: Array[U]): Matrix[Double] = {
+  def getMatrix[U <: DataObject](data: Array[U]): DenseMatrix[Double] = {
      new DenseMatrix[Double](
        data(0).getData.length + 1,
        data.length,

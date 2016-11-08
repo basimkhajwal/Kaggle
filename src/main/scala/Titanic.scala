@@ -1,4 +1,8 @@
+import logistic_regression.LogisticRegression
+
 import scala.io.Source
+import breeze.linalg._
+import breeze.plot._
 
 /**
   * Created by Basim on 05/11/2016.
@@ -38,11 +42,36 @@ object Titanic {
   }
 
   def main(args: Array[String]): Unit = {
+
+    /*val trainData = new DenseMatrix[Double](4, 2, Array(1.0, 1, 1, 1, 3, 4, 8, 9))
+    val results = DenseVector(Array(0, 0, 1, 1))
+    val logRes = new LogisticRegression(trainData, results)
+
+    val a = logRes.costGrad(new DenseMatrix[Double](2, 1, Array(-30.0, 6.0)))
+    println("Cost: " + a._1)
+    println("Grad: " + a._2)
+
+    val optTheta = logRes.solve()
+    println(logRes.hypothesis(optTheta, new DenseMatrix[Double](3, 2, Array(1.0, 1, 1, 2, 10, 7)) ))*/
+
     val trainData = loadData(false)
     val predictions = loadPredictions
-    val testData = loadData(true)
 
-    println(DataObject.getMatrix(trainData))
+    val logModel = new LogisticRegression(DataObject.getMatrix(trainData), DenseVector(predictions.map(x => if (x) 1 else 0)))
+    val before: Long = System.currentTimeMillis();
+    val res = logModel.solve(2000, 0.003)
+    println("Time taken: " + (System.currentTimeMillis() - before) + "ms")
+
+    val f = Figure("Cost over iterations")
+    val p = f.subplot(0)
+    val x: DenseVector[Double] = DenseVector((1 to 2000).toArray).map(x => 1.0 * x)
+    p += plot(x, res._2, '.')
+    p.xlabel = "Number of Iterations"
+    p.ylabel = "Cost"
+
+    val cp = logModel.hypothesis(res._1)
+    val totalCorrect = cp.valuesIterator.zip(predictions.iterator).filter(x => (x._1 >= 0.5) == x._2).length
+    println(totalCorrect + " / " + cp.length)
   }
 
 }
