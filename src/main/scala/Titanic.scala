@@ -1,3 +1,7 @@
+import java.io.PrintWriter
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
+
 import logistic_regression.LogisticRegression
 
 import scala.io.Source
@@ -11,6 +15,7 @@ object Titanic {
 
   val testData: String = "data/titanic/test.csv"
   val trainData: String = "data/titanic/train.csv"
+  val outputFile: String = "data/titanic/predictionReg.csv"
 
   case class PassengerData(id: Int, pClass: Int, isMale: Boolean, age: Double, sibSp: Int, parch: Int, fare: Double) extends DataObject {
     override def getData: Array[Double] = Array(pClass, if (isMale) 0 else 1, age, sibSp, parch, fare)
@@ -36,30 +41,26 @@ object Titanic {
       .map(ln => readColumns(isTest, ln.split(","))).toArray
   }
 
-  def loadPredictions(): Array[Boolean] = {
+  def loadDataResults(): Array[Boolean] = {
     Source.fromFile(trainData).getLines()
       .drop(1).map(ln => ln.split(",")(1) == "1").toArray
   }
 
+  def outputPredictions(passengerData: Array[PassengerData], prediction: Iterable[Int]): Unit = {
+    val strData: String = "PassengerId,Survived\n" +
+      passengerData.zip(prediction).map(res => res._1.id + "," + res._2 + "\n").foldLeft("")(_+_)
+
+    Files.write(Paths.get(outputFile), strData.getBytes(StandardCharsets.UTF_8))
+  }
+
   def main(args: Array[String]): Unit = {
 
-    /*val trainData = new DenseMatrix[Double](4, 2, Array(1.0, 1, 1, 1, 3, 4, 8, 9))
-    val results = DenseVector(Array(0, 0, 1, 1))
-    val logRes = new LogisticRegression(trainData, results)
-
-    val a = logRes.costGrad(new DenseMatrix[Double](2, 1, Array(-30.0, 6.0)))
-    println("Cost: " + a._1)
-    println("Grad: " + a._2)
-
-    val optTheta = logRes.solve()
-    println(logRes.hypothesis(optTheta, new DenseMatrix[Double](3, 2, Array(1.0, 1, 1, 2, 10, 7)) ))*/
-
     val trainData = loadData(false)
-    val predictions = loadPredictions
+    val predictions = loadDataResults
 
     val logModel = new LogisticRegression(DataObject.getMatrix(trainData), DenseVector(predictions.map(x => if (x) 1 else 0)))
     val before: Long = System.currentTimeMillis();
-    val res = logModel.solve(2000, 0.003)
+    val res = logModel.solve(2000, 0.003, lambda = 1000)
     println("Time taken: " + (System.currentTimeMillis() - before) + "ms")
 
     val f = Figure("Cost over iterations")
@@ -71,7 +72,11 @@ object Titanic {
 
     val cp = logModel.hypothesis(res._1)
     val totalCorrect = cp.valuesIterator.zip(predictions.iterator).filter(x => (x._1 >= 0.5) == x._2).length
-    println(totalCorrect + " / " + cp.length)
+    println("Training set correctly predicted: " + totalCorrect + " / " + cp.length)
+
+    val testData = loadData(true)
+    val predVals = logModel.hypothesis(res._1, DataObject.getMatrix(testData)).valuesIterator.map(x => if (x >= 0.5) 1 else 0)
+    outputPredictions(testData, predVals.toIterable)
   }
 
 }

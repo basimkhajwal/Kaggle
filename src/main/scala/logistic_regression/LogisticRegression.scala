@@ -32,16 +32,28 @@ class LogisticRegression(val trainData: DenseMatrix[Double], val results: DenseV
     ((a+b) * (-1.0 / m), grad * (1.0 / m))
   }
 
+  def costGradWithReg(theta: DenseMatrix[Double], lambda: Double): (Double, DenseMatrix[Double]) = {
+    val (normCost, normGrad) = costGrad(theta)
+
+    val thetaWithout0: DenseMatrix[Double] = DenseMatrix.vertcat[Double](DenseMatrix.ones(1, 1), DenseMatrix.zeros(theta.rows-1, 1)) :* theta
+
+    val regCost: Double = (lambda / (2 * m)) * thetaWithout0.valuesIterator.map(x => x*x).sum
+    val regGrad: DenseMatrix[Double] = (lambda / m) * thetaWithout0
+
+    (normCost + regCost, normGrad + regGrad)
+  }
+
   @tailrec
-  final def gradientDescent(theta: DenseMatrix[Double], alpha: Double, hist: DenseVector[Double], iterationsLeft: Int): (DenseMatrix[Double], DenseVector[Double]) = {
-    val cost = costGrad(theta)
+  final def gradientDescent(theta: DenseMatrix[Double], alpha: Double, lambda: Double, hist: DenseVector[Double], iterationsLeft: Int): (DenseMatrix[Double], DenseVector[Double]) = {
+    val cost = costGradWithReg(theta, lambda)
 
     if (iterationsLeft <= 0) (theta, hist)
-    else gradientDescent(theta - (cost._2 * alpha), alpha, DenseVector.vertcat(hist, DenseVector(cost._1)), iterationsLeft - 1)
+    else gradientDescent(theta - (cost._2 * alpha), alpha, lambda, DenseVector.vertcat(hist, DenseVector(cost._1)), iterationsLeft - 1)
   }
 
   def solve( numIterations: Int = 400,
              alpha: Double = 0.001,
+             lambda: Double = 0,
              initialTheta: DenseMatrix[Double] = DenseMatrix.zeros(trainData.cols, 1)
-           ): (DenseMatrix[Double], DenseVector[Double]) = gradientDescent(initialTheta, alpha, DenseVector(), numIterations)
+           ): (DenseMatrix[Double], DenseVector[Double]) = gradientDescent(initialTheta, alpha, lambda, DenseVector(), numIterations)
 }
