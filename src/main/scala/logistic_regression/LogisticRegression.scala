@@ -23,7 +23,7 @@ class LogisticRegression(val trainData: DenseMatrix[Double], val results: DenseV
   def costGrad(theta: DenseMatrix[Double]): (Double, DenseMatrix[Double]) = {
     val hyp: DenseVector[Double] = hypothesis(theta)
 
-    val a: Double = results.dot(hyp.map(Math.log))
+    val a: Double = results.dot(hyp.map(x => Math.log(Math.max(x, 1e-50))))
     val b: Double = results.map(x => 1 - x).dot(hyp.map(x => Math.log(Math.max(1-x, 1e-50))))
 
     val err: DenseMatrix[Double] = (hyp - results).toDenseMatrix.t
@@ -35,7 +35,7 @@ class LogisticRegression(val trainData: DenseMatrix[Double], val results: DenseV
   def costGradWithReg(theta: DenseMatrix[Double], lambda: Double): (Double, DenseMatrix[Double]) = {
     val (normCost, normGrad) = costGrad(theta)
 
-    val thetaWithout0: DenseMatrix[Double] = DenseMatrix.vertcat[Double](DenseMatrix.ones(1, 1), DenseMatrix.zeros(theta.rows-1, 1)) :* theta
+    val thetaWithout0: DenseMatrix[Double] = DenseMatrix.vertcat[Double](DenseMatrix.zeros(1, 1), DenseMatrix.ones(theta.rows-1, 1)) :* theta
 
     val regCost: Double = (lambda / (2 * m)) * thetaWithout0.valuesIterator.map(x => x*x).sum
     val regGrad: DenseMatrix[Double] = (lambda / m) * thetaWithout0

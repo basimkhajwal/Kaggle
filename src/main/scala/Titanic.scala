@@ -18,7 +18,7 @@ object Titanic {
   val outputFile: String = "data/titanic/predictionRegChanged.csv"
 
   case class PassengerData(id: Int, pClass: Int, isMale: Boolean, age: Double, sibSp: Int, parch: Int, fare: Double) extends DataObject {
-    override def getData: Array[Double] = Array(pClass, if (isMale) 1 else 0, sibSp, parch)
+    override def getData: Array[Double] = Array(pClass, if (isMale) 0 else 1, sibSp, parch, fare, pClass * fare, 0.01*fare*fare)
   }
 
   def readColumns(isTest: Boolean, cols: Array[String]): PassengerData = {
@@ -58,9 +58,11 @@ object Titanic {
     val trainData = loadData(false)
     val predictions = loadDataResults
 
+    println(DataObject.getMatrix(trainData))
+
     val logModel = new LogisticRegression(DataObject.getMatrix(trainData), DenseVector(predictions.map(x => if (x) 1 else 0)))
     val before: Long = System.currentTimeMillis();
-    val res = logModel.solve(2000, 0.003, lambda = 1000)
+    val res = logModel.solve(2000, 0.00001, lambda = 0)
     println("Time taken: " + (System.currentTimeMillis() - before) + "ms")
 
     val f = Figure("Cost over iterations")
@@ -69,6 +71,8 @@ object Titanic {
     p += plot(x, res._2, '.')
     p.xlabel = "Number of Iterations"
     p.ylabel = "Cost"
+
+    for (i <- 1 to 20) println("Iter " + (i * 100) + ": " + res._2.valueAt(i*10))
 
     val cp = logModel.hypothesis(res._1)
     val totalCorrect = cp.valuesIterator.zip(predictions.iterator).filter(x => (x._1 >= 0.5) == x._2).length
