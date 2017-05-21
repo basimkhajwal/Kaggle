@@ -17,7 +17,7 @@ object Titanic {
   val outputFile: String = "data/titanic/predictionScaled.csv"
 
   case class PassengerData(id: Int, pClass: Int, isMale: Boolean, age: Double, sibSp: Int, parch: Int, fare: Double) extends DataObject {
-    override def getData: Array[Double] =
+    override def getFeatureVector(): Array[Double] =
       Array(if (isMale) 200 else 0, fare, pClass * 100, sibSp * 60, parch * 60)
   }
 
@@ -58,11 +58,11 @@ object Titanic {
     val trainData = loadData(false)
     val predictions = loadDataResults
 
-    println(DataObject.getMatrix(trainData))
+    println(DataObject.getDataMatrix(trainData))
 
-    val numIterations = 25000
+    val numIterations = 1000
 
-    val logModel = new LogisticRegression(DataObject.getMatrix(trainData), DenseVector(predictions.map(x => if (x) 1 else 0)))
+    val logModel = new LogisticRegression(DataObject.getDataMatrix(trainData), DenseVector(predictions.map(x => if (x) 1 else 0)))
     val before: Long = System.currentTimeMillis();
     val res = logModel.solve(numIterations, 0.0001)
     println("Time taken: " + (System.currentTimeMillis() - before) + "ms")
@@ -83,7 +83,7 @@ object Titanic {
     println(res._1)
 
     val testData = loadData(true)
-    val predVals = logModel.hypothesis(res._1, DataObject.getMatrix(testData)).valuesIterator.map(x => if (x >= 0.5) 1 else 0)
+    val predVals = logModel.hypothesis(res._1, DataObject.getDataMatrix(testData)).valuesIterator.map(x => if (x >= 0.5) 1 else 0)
     outputPredictions(testData, predVals.toIterable)
   }
 
