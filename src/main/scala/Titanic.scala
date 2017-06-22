@@ -21,29 +21,28 @@ object Titanic {
       Array(if (isMale) 200 else 0, fare, pClass * 100, sibSp * 60, parch * 60)
   }
 
-  def readColumns(isTest: Boolean, cols: Array[String]): PassengerData = {
-    // Take into account extra comma in name
-    val offset = if (isTest) 0 else 1
+  def readPassenger(reader: CSVReader): PassengerData = {
     PassengerData(
-      cols(0).toInt,
-      cols(1 + offset).toInt,
-      cols(4 + offset) == "male",
-      if (cols(5 + offset) == "") 0 else cols(5 + offset).toDouble,
-      cols(6 + offset).toInt,
-      cols(7 + offset).toInt,
-      if (cols(9 + offset) == "") 0 else cols(9 + offset).toDouble
+      reader.getInt("PassengerId"),
+      reader.getInt("Pclass"),
+      reader.getString("Sex").equals("male"),
+      if (reader.getString("Age").isEmpty) 0 else reader.getDouble("Age"),
+      reader.getInt("SibSp"),
+      reader.getInt("Parch"),
+      if (reader.getString("Fare").isEmpty) 0 else reader.getDouble("Fare")
     )
   }
 
-  def loadData(isTest: Boolean): Array[PassengerData] = {
-    Source.fromFile(if (isTest) testData else trainData)
-      .getLines().drop(1)
-      .map(ln => readColumns(isTest, ln.split(","))).toArray
+  def loadData(fileName: String): Array[PassengerData] = {
+    new CSVReader(fileName).read(readPassenger).toArray
   }
 
   def loadDataResults(): Array[Boolean] = {
-    Source.fromFile(trainData).getLines()
-      .drop(1).map(ln => ln.split(",")(1) == "1").toArray
+    new CSVReader(trainData).read(
+      reader => {
+        reader.getInt("Survived") == 1
+      }
+    ).toArray
   }
 
   def outputPredictions(passengerData: Array[PassengerData], prediction: Iterable[Int]): Unit = {
@@ -55,7 +54,7 @@ object Titanic {
 
   def main(args: Array[String]): Unit = {
 
-    val trainData = loadData(false)
+    val trainData = loadData(this.trainData)
     val predictions = loadDataResults
 
     println(DataObject.getDataMatrix(trainData))
@@ -82,9 +81,9 @@ object Titanic {
     println("Training set correctly predicted: " + totalCorrect + " / " + cp.length)
     println(res._1)
 
-    val testData = loadData(true)
-    val predVals = logModel.hypothesis(res._1, DataObject.getDataMatrix(testData)).valuesIterator.map(x => if (x >= 0.5) 1 else 0)
-    outputPredictions(testData, predVals.toIterable)
+    //val testData = loadData(testData)
+    //val predVals = logModel.hypothesis(res._1, DataObject.getDataMatrix(testData)).valuesIterator.map(x => if (x >= 0.5) 1 else 0)
+    //outputPredictions(testData, predVals.toIterable)
   }
 
 }
