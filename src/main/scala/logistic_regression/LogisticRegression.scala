@@ -1,6 +1,7 @@
 package logistic_regression
 
 import breeze.linalg.{DenseMatrix, DenseVector}
+import breeze.optimize.{DiffFunction, LBFGS}
 
 /**
   * Created by Basim on 05/11/2016.
@@ -42,7 +43,7 @@ class LogisticRegression(val trainData: DenseMatrix[Double], val results: DenseV
     (normCost + regCost, normGrad + regGrad)
   }
 
-  def solve(
+  def solveIterative(
     numIterations: Int = 400,
     alpha: Double = 0.001,
     lambda: Double = 0,
@@ -61,5 +62,22 @@ class LogisticRegression(val trainData: DenseMatrix[Double], val results: DenseV
     }
 
     (theta, hist)
+  }
+
+  def solve(
+    lambda: Double = 0, maxIterations: Int = -1,
+    initialTheta: DenseVector[Double] = DenseVector.zeros(trainData.cols)
+  ) : DenseVector[Double] = {
+
+    val lbfgs = new LBFGS[DenseVector[Double]](maxIter=maxIterations)
+
+    val diffFunc = new DiffFunction[DenseVector[Double]] {
+      override def calculate(x: DenseVector[Double]): (Double, DenseVector[Double]) = {
+        val (c, err) = costGradWithReg(x.toDenseMatrix.t, lambda)
+        (c, err.toDenseVector)
+      }
+    }
+
+    lbfgs.minimize(diffFunc, initialTheta)
   }
 }
