@@ -3,38 +3,38 @@
 # Simple Build Tool
 # http://www.scala-sbt.org/release/docs/Getting-Started/Directories.html#configuring-version-control
 
-target/
-lib_managed/
-src_managed/
-project/boot/
-.history
-.cache
+scala/target/
+scala/lib_managed/
+scala/src_managed/
+scala/project/boot/
+scala/.history
+scala/.cache
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff:
-.idea/misc.xml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/dictionaries
-.idea/vcs.xml
-.idea/jsLibraryMappings.xml
+scala/.idea/misc.xml
+scala/.idea/workspace.xml
+scala/.idea/tasks.xml
+scala/.idea/dictionaries
+scala/.idea/vcs.xml
+scala/.idea/jsLibraryMappings.xml
 
 # Sensitive or high-churn files:
-.idea/dataSources.ids
-.idea/dataSources.xml
-.idea/dataSources.local.xml
-.idea/sqlDataSources.xml
-.idea/dynamic.xml
-.idea/uiDesigner.xml
+scala/.idea/dataSources.ids
+scala/.idea/dataSources.xml
+scala/.idea/dataSources.local.xml
+scala/.idea/sqlDataSources.xml
+scala/.idea/dynamic.xml
+scala/.idea/uiDesigner.xml
 
 # Gradle:
-.idea/gradle.xml
-.idea/libraries
+scala/.idea/gradle.xml
+scala/.idea/libraries
 
 # Mongo Explorer plugin:
-.idea/mongoSettings.xml
+scala/.idea/mongoSettings.xml
 
 ## File-based project format:
 *.iws
@@ -42,10 +42,10 @@ project/boot/
 ## Plugin-specific files:
 
 # IntelliJ
-/out/
+scala/out/
 
 # mpeltonen/sbt-idea plugin
-.idea_modules/
+scala/.idea_modules/
 
 # JIRA plugin
 atlassian-ide-plugin.xml
@@ -57,9 +57,5 @@ crashlytics-build.properties
 fabric.properties
 
 .gitignore
-project/project/
-project/target/
-src/main/java/
-src/main/resources/
-src/main/scala-2.12/
-src/test/
+scala/project/project/
+scala/project/target/
