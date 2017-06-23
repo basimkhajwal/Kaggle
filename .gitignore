@@ -36,6 +36,9 @@ scala/.idea/libraries
 # Mongo Explorer plugin:
 scala/.idea/mongoSettings.xml
 
+# IntelliJ Idea
+scala/.idea/
+
 ## File-based project format:
 *.iws
 
